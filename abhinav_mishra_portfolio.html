@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#000;color:#39FF14;font-family:'Courier New',monospace;overflow-x:hidden;cursor:default;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:#000;}
+::-webkit-scrollbar-thumb{background:#39FF14;}
+
+/* SCANLINE overlay */
+body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.05) 2px,rgba(0,0,0,0.05) 4px);pointer-events:none;z-index:999;}
+
+/* NAV */
+nav{position:fixed;top:0;width:100%;background:rgba(0,0,0,0.9);border-bottom:1px solid #39FF14;padding:12px 40px;display:flex;justify-content:space-between;align-items:center;z-index:100;backdrop-filter:blur(4px);}
+.nav-logo{color:#39FF14;font-size:14px;letter-spacing:2px;text-transform:uppercase;}
+.nav-links{display:flex;gap:24px;}
+.nav-links a{color:#39FF14;text-decoration:none;font-size:12px;letter-spacing:1px;opacity:0.7;transition:opacity 0.2s;}
+.nav-links a:hover{opacity:1;text-shadow:0 0 8px #39FF14;}
+
+/* HERO */
+#hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:80px 60px 40px;position:relative;}
+.grid-bg{position:absolute;top:0;left:0;width:100%;height:100%;background-image:linear-gradient(rgba(57,255,20,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(57,255,20,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;}
+.terminal-box{max-width:800px;position:relative;z-index:1;}
+.prompt-line{font-size:13px;color:#666;margin-bottom:4px;letter-spacing:1px;}
+.hero-name{font-size:clamp(36px,6vw,72px);font-weight:700;line-height:1;color:#39FF14;text-shadow:0 0 40px rgba(57,255,20,0.4);letter-spacing:-1px;margin:8px 0;}
+.hero-title{font-size:14px;color:#FFFF33;letter-spacing:4px;text-transform:uppercase;margin:16px 0 8px;}
+.hero-sub{font-size:13px;color:#555;line-height:1.8;max-width:560px;margin:8px 0 32px;}
+.hero-sub span{color:#39FF14;}
+.blink{animation:blink 1s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
+.status-row{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;}
+.status-pill{background:#0a1a04;border:1px solid #39FF14;padding:6px 14px;font-size:11px;letter-spacing:1px;color:#39FF14;}
+.status-pill.yellow{border-color:#FFFF33;color:#FFFF33;background:#1a1a04;}
+.cta-row{display:flex;gap:12px;margin-top:32px;}
+.btn{padding:10px 24px;font-size:12px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-family:'Courier New',monospace;text-decoration:none;transition:all 0.2s;}
+.btn-primary{background:#39FF14;color:#000;border:1px solid #39FF14;}
+.btn-primary:hover{background:transparent;color:#39FF14;box-shadow:0 0 20px rgba(57,255,20,0.3);}
+.btn-secondary{background:transparent;color:#39FF14;border:1px solid #39FF14;}
+.btn-secondary:hover{background:#0a1a04;box-shadow:0 0 20px rgba(57,255,20,0.2);}
+.scroll-hint{position:absolute;bottom:32px;left:60px;font-size:11px;color:#333;letter-spacing:2px;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:0.3;}50%{opacity:1;}}
+
+/* SECTION */
+section{padding:80px 60px;max-width:1100px;margin:0 auto;}
+.section-label{font-size:11px;color:#FFFF33;letter-spacing:4px;text-transform:uppercase;margin-bottom:8px;}
+.section-title{font-size:clamp(22px,3vw,36px);color:#39FF14;margin-bottom:40px;border-bottom:1px solid #111;padding-bottom:16px;}
+.section-title span{color:#FFFF33;}
+
+/* ABOUT */
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start;}
+.about-text{font-size:13px;line-height:2;color:#888;}
+.about-text strong{color:#39FF14;}
+.about-text em{color:#FFFF33;}
+.code-card{background:#0a0a0a;border:1px solid #1a1a1a;padding:24px;font-size:12px;line-height:1.9;}
+.code-card .kw{color:#FFFF33;}
+.code-card .str{color:#39FF14;}
+.code-card .comment{color:#333;}
+.code-card .fn{color:#88aaff;}
+
+/* TIMELINE */
+.timeline{position:relative;padding-left:32px;}
+.timeline::before{content:'';position:absolute;left:0;top:0;bottom:0;width:1px;background:linear-gradient(to bottom,#39FF14,#FFFF33,#333);}
+.tl-item{position:relative;margin-bottom:40px;opacity:0;transform:translateX(-10px);transition:all 0.5s;}
+.tl-item.visible{opacity:1;transform:translateX(0);}
+.tl-dot{position:absolute;left:-36px;top:4px;width:10px;height:10px;background:#39FF14;border:2px solid #000;box-shadow:0 0 8px #39FF14;}
+.tl-badge{display:inline-block;font-size:10px;letter-spacing:2px;padding:3px 10px;border:1px solid #333;color:#555;text-transform:uppercase;margin-bottom:8px;}
+.tl-badge.active{border-color:#39FF14;color:#39FF14;}
+.tl-org{font-size:16px;color:#39FF14;margin-bottom:4px;letter-spacing:1px;}
+.tl-role{font-size:12px;color:#FFFF33;margin-bottom:8px;text-transform:uppercase;letter-spacing:2px;}
+.tl-desc{font-size:12px;color:#666;line-height:1.9;}
+.tl-desc strong{color:#aaa;}
+.tl-tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+.tag{font-size:10px;padding:3px 10px;border:1px solid #1a1a1a;color:#444;letter-spacing:1px;}
+
+/* PROJECTS */
+.projects-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;}
+.project-card{background:#050505;border:1px solid #111;padding:24px;position:relative;overflow:hidden;cursor:pointer;transition:all 0.3s;}
+.project-card::before{content:'';position:absolute;top:0;left:0;width:100%;height:2px;background:linear-gradient(90deg,#39FF14,#FFFF33);transform:scaleX(0);transition:transform 0.3s;transform-origin:left;}
+.project-card:hover{border-color:#333;background:#080808;}
+.project-card:hover::before{transform:scaleX(1);}
+.project-card:hover .pc-name{text-shadow:0 0 12px rgba(57,255,20,0.5);}
+.pc-badge{font-size:9px;letter-spacing:2px;padding:3px 8px;border:1px solid;margin-bottom:16px;display:inline-block;text-transform:uppercase;}
+.pc-badge.deployed{border-color:#39FF14;color:#39FF14;background:#0a1a04;}
+.pc-badge.ml{border-color:#FFFF33;color:#FFFF33;background:#1a1a04;}
+.pc-badge.ts{border-color:#88aaff;color:#88aaff;background:#04041a;}
+.pc-name{font-size:16px;color:#39FF14;margin-bottom:8px;letter-spacing:0.5px;}
+.pc-desc{font-size:12px;color:#555;line-height:1.8;margin-bottom:16px;}
+.pc-stack{display:flex;gap:6px;flex-wrap:wrap;}
+.pc-tech{font-size:10px;padding:2px 8px;background:#0a0a0a;border:1px solid #1a1a1a;color:#444;}
+.pc-expand{margin-top:16px;border-top:1px solid #111;padding-top:12px;display:none;}
+.pc-expand.open{display:block;}
+.pc-expand pre{font-size:11px;color:#39FF14;line-height:1.7;background:#000;padding:12px;border-left:2px solid #39FF14;overflow-x:auto;}
+
+/* STACK */
+.stack-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;}
+.stack-group{background:#050505;border:1px solid #111;padding:20px;}
+.sg-label{font-size:10px;color:#FFFF33;letter-spacing:3px;text-transform:uppercase;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid #111;}
+.sg-items{display:flex;flex-direction:column;gap:8px;}
+.sg-item{display:flex;align-items:center;gap:10px;font-size:12px;color:#555;}
+.sg-item::before{content:'▸';color:#39FF14;font-size:10px;}
+.sg-item:hover{color:#39FF14;}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:48px;}
+.stat-card{background:#050505;border:1px solid #111;padding:20px;text-align:center;position:relative;overflow:hidden;}
+.stat-card::after{content:'';position:absolute;bottom:0;left:0;width:100%;height:1px;background:linear-gradient(90deg,transparent,#39FF14,transparent);}
+.stat-num{font-size:32px;color:#39FF14;font-weight:700;text-shadow:0 0 20px rgba(57,255,20,0.3);}
+.stat-label{font-size:10px;color:#444;letter-spacing:2px;text-transform:uppercase;margin-top:4px;}
+
+/* CONTACT */
+.contact-box{background:#050505;border:1px solid #39FF14;padding:40px;max-width:600px;position:relative;}
+.contact-box::before{content:'OPEN FOR OPPORTUNITIES';position:absolute;top:-10px;left:20px;background:#000;padding:0 8px;font-size:10px;color:#FFFF33;letter-spacing:2px;}
+.contact-links{display:flex;flex-direction:column;gap:16px;margin-top:24px;}
+.contact-link{display:flex;align-items:center;gap:16px;color:#555;font-size:13px;text-decoration:none;transition:color 0.2s;padding:8px 0;border-bottom:1px solid #111;}
+.contact-link:hover{color:#39FF14;}
+.contact-link span{color:#FFFF33;font-size:11px;letter-spacing:2px;min-width:80px;}
+
+/* FOOTER */
+footer{border-top:1px solid #111;padding:24px 60px;display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#333;}
+footer span{color:#39FF14;}
+
+/* BOOT SCREEN */
+#boot{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:1000;display:flex;flex-direction:column;justify-content:center;padding:60px;font-size:13px;line-height:2;}
+#boot-lines{max-width:700px;}
+.boot-line{color:#39FF14;opacity:0;}
+.boot-line.show{opacity:1;}
+.boot-line.dim{color:#333;}
+.boot-line.yellow{color:#FFFF33;}
+#boot-cursor{display:inline-block;width:8px;height:14px;background:#39FF14;vertical-align:middle;animation:blink 0.8s infinite;}
+
+@media(max-width:680px){
+  nav{padding:12px 20px;}
+  #hero,section{padding:80px 24px 40px;}
+  .about-grid,.stats-row{grid-template-columns:1fr;}
+  footer{flex-direction:column;gap:8px;padding:24px;}
+}
+</style>
+</head>
+<body>
+
+<!-- BOOT SCREEN -->
+<div id="boot">
+  <div id="boot-lines"></div>
+  <span id="boot-cursor"></span>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">AM<span style="color:#FFFF33">.</span>dev</div>
+  <div class="nav-links">
+    <a href="#about">about</a>
+    <a href="#experience">experience</a>
+    <a href="#projects">projects</a>
+    <a href="#stack">stack</a>
+    <a href="#contact">contact</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div id="hero">
+  <div class="grid-bg"></div>
+  <div class="terminal-box">
+    <div class="prompt-line">abhinav@gsv:~$ ./introduce --self</div>
+    <h1 class="hero-name">ABHINAV<br/>MISHRA</h1>
+    <div class="hero-title">AI &amp; Data Science</div>
+    <p class="hero-sub">
+      I build <span>AI systems</span> for real operational problems.<br/>
+      Not demos — <span>deployed systems</span> that make decisions at scale.<br/>
+      <span style="color:#555;">GSV '28 · Ex DFCCIL · Ex Indian Railways</span>
+    </p>
+    <div class="status-row">
+      <div class="status-pill">⬤ &nbsp;Available for Internships</div>
+      <div class="status-pill yellow">Top 10% · IIT Guwahati Bootcamp</div>
+      <div class="status-pill">2 Internships Done</div>
+    </div>
+    <div class="cta-row">
+      <a href="#projects" class="btn btn-primary">View Projects</a>
+      <a href="#contact" class="btn btn-secondary">Get in Touch</a>
+    </div>
+  </div>
+  <div class="scroll-hint">▼ &nbsp;SCROLL TO EXPLORE</div>
+</div>
+
+<!-- ABOUT -->
+<section id="about" style="max-width:1100px;margin:0 auto;padding:80px 60px;">
+  <div class="section-label">// 01</div>
+  <div class="section-title">$ whoami <span>—</span></div>
+  <div class="about-grid">
+    <div class="about-text">
+      <p>I'm a second-year <strong>AI & Data Science</strong> student at <strong>Gati Shakti Vishwavidyalaya</strong>, India's first university dedicated to infrastructure and logistics — which is exactly where my work lives.</p>
+      <br/>
+      <p>At <em>DFCCIL</em>, I built a full production AI system to evaluate Goods Cargo Terminals across India's dedicated freight corridors — Schedule-I feasibility checks, site recommendation engines, opportunity indexing, all deployed.</p>
+      <br/>
+      <p>Before that, <em>Indian Railways (DRM Office, Delhi)</em> — where I saw what data chaos looks like at national scale and learned why good systems matter.</p>
+      <br/>
+      <p>I think in <strong>pipelines</strong>, build in <strong>Python</strong>, and believe the goal of any model is a <strong>decision</strong> — not a metric.</p>
+    </div>
+    <div class="code-card">
+      <div class="comment"># abhinav.py</div>
+      <br/>
+      <span class="kw">class</span> <span class="fn">Abhinav</span>:<br/>
+      &nbsp;&nbsp;<span class="kw">def</span> <span class="fn">__init__</span>(self):<br/>
+      &nbsp;&nbsp;&nbsp;&nbsp;self.university = <span class="str">"GSV '28"</span><br/>
+      &nbsp;&nbsp;&nbsp;&nbsp;self.major = <span class="str">"AI & Data Science"</span><br/>
+      &nbsp;&nbsp;&nbsp;&nbsp;self.location = <span class="str">"Vadodara / Delhi, IN"</span><br/>
+      <br/>
+      &nbsp;&nbsp;&nbsp;&nbsp;self.internships = [<br/>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="str">"DFCCIL"</span>,<br/>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="str">"Indian Railways — DRM Delhi"</span><br/>
+      &nbsp;&nbsp;&nbsp;&nbsp;]<br/>
+      <br/>
+      &nbsp;&nbsp;&nbsp;&nbsp;self.achievement = <span class="str">"Top 10% · IIT-G"</span><br/>
+      &nbsp;&nbsp;&nbsp;&nbsp;self.club = <span class="str">"TechnoCrats GSV"</span><br/>
+      <br/>
+      &nbsp;&nbsp;&nbsp;&nbsp;self.belief = <span class="str">"data > assumptions"</span><br/>
+      <br/>
+      &nbsp;&nbsp;<span class="kw">def</span> <span class="fn">goal</span>(self):<br/>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span> <span class="str">"decisions, not dashboards"</span>
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section id="experience" style="max-width:1100px;margin:0 auto;padding:80px 60px;">
+  <div class="section-label">// 02</div>
+  <div class="section-title">$ git log <span>--experience</span></div>
+  <div class="timeline">
+
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-badge active">2025 — Present</div>
+      <div class="tl-org">Gati Shakti Vishwavidyalaya</div>
+      <div class="tl-role">B.Tech · AI & Data Science</div>
+      <div class="tl-desc">India's first infrastructure-focused university. Building foundations in ML systems, analytics pipelines, and system design. <strong>Coordinator at TechnoCrats GSV</strong> — the college tech club.</div>
+      <div class="tl-tags">
+        <span class="tag">Machine Learning</span>
+        <span class="tag">System Design</span>
+        <span class="tag">Python</span>
+        <span class="tag">Analytics</span>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot" style="background:#FFFF33;box-shadow:0 0 8px #FFFF33;"></div>
+      <div class="tl-badge" style="border-color:#FFFF33;color:#FFFF33;">2025 · Internship</div>
+      <div class="tl-org" style="color:#FFFF33;">DFCCIL</div>
+      <div class="tl-role">Operations Planning & Business Development</div>
+      <div class="tl-desc">Built an <strong>AI-powered Decision Support System</strong> for evaluating Goods Cargo Terminals across WDFC & EDFC. Shipped Schedule-I (feasibility) and Schedule-II (site recommendation) engines. Deployed to production on Streamlit Cloud with secure auth, KPI dashboards, PDF reports, and a station leaderboard using a custom Opportunity Index.</div>
+      <div class="tl-tags">
+        <span class="tag">Python</span><span class="tag">Streamlit</span><span class="tag">Power BI</span><span class="tag">Excel</span><span class="tag">Production Deploy</span>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot" style="background:#88aaff;box-shadow:0 0 8px #88aaff;"></div>
+      <div class="tl-badge" style="border-color:#88aaff;color:#88aaff;">2024 · Internship</div>
+      <div class="tl-org" style="color:#88aaff;">Indian Railways — DRM Office, Delhi</div>
+      <div class="tl-role">Operations Planning & Business Development</div>
+      <div class="tl-desc">Worked at the Divisional Railway Manager's office, Delhi Division. Gained deep exposure to how <strong>large-scale operational data</strong> is managed (and mismanaged) at national infrastructure scale.</div>
+      <div class="tl-tags">
+        <span class="tag">Operations</span><span class="tag">Data Analysis</span><span class="tag">Logistics</span>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot" style="background:#555;"></div>
+      <div class="tl-badge">2024 · Achievement</div>
+      <div class="tl-org" style="color:#aaa;">IIT Guwahati — Consulting Bootcamp</div>
+      <div class="tl-role">Consulting & Analytics Club</div>
+      <div class="tl-desc">Ranked <strong>Top 10%</strong> nationally in a competitive consulting bootcamp run by the Consulting & Analytics Club at IIT Guwahati.</div>
+      <div class="tl-tags">
+        <span class="tag">Strategy</span><span class="tag">Analytics</span><span class="tag">Case Studies</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects" style="max-width:1100px;margin:0 auto;padding:80px 60px;">
+  <div class="section-label">// 03</div>
+  <div class="section-title">$ ls <span>./projects/</span></div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-num">3</div><div class="stat-label">Projects</div></div>
+    <div class="stat-card"><div class="stat-num">1</div><div class="stat-label">In Production</div></div>
+    <div class="stat-card"><div class="stat-num">118</div><div class="stat-label">Contributions</div></div>
+    <div class="stat-card"><div class="stat-num">53</div><div class="stat-label">Commits</div></div>
+  </div>
+
+  <div class="projects-grid">
+
+    <div class="project-card" onclick="toggleExpand('p1')">
+      <div class="pc-badge deployed">⬤ Deployed</div>
+      <div class="pc-name">GCT Decision Support System</div>
+      <p class="pc-desc">AI-powered feasibility + site recommendation engine for Goods Cargo Terminals across India's Dedicated Freight Corridors. Built for DFCCIL — in production.</p>
+      <div class="pc-stack">
+        <span class="pc-tech">Python</span><span class="pc-tech">Streamlit</span><span class="pc-tech">Power BI</span><span class="pc-tech">Excel</span><span class="pc-tech">PDF Gen</span>
+      </div>
+      <div class="pc-expand" id="p1">
+        <pre>Schedule-I  → Regulatory feasibility check
+Schedule-II → Site recommendation + ranking
+Opportunity Index → Composite scoring (WDFC/EDFC)
+Industrial Ecosystem → 11-industry weighted score
+                        30–50km catchment radius
+Auth        → Hybrid allowlist + domain model
+Output      → KPI dashboards · PDF reports
+              Station leaderboard
+STATUS      → ✓ Production on Streamlit Cloud</pre>
+      </div>
+      <div style="font-size:10px;color:#333;margin-top:12px;letter-spacing:1px;">▸ CLICK TO EXPAND</div>
+    </div>
+
+    <div class="project-card" onclick="toggleExpand('p2')">
+      <div class="pc-badge ml">⬤ ML</div>
+      <div class="pc-name">Airline Loyalty Analytics</div>
+      <p class="pc-desc">End-to-end customer analytics pipeline — churn prediction, segmentation, and CLV scoring for an airline loyalty program.</p>
+      <div class="pc-stack">
+        <span class="pc-tech">XGBoost</span><span class="pc-tech">SMOTE</span><span class="pc-tech">K-Means</span><span class="pc-tech">Streamlit</span><span class="pc-tech">Scikit-learn</span>
+      </div>
+      <div class="pc-expand" id="p2">
+        <pre>Churn Model → XGBoost + SMOTE oversampling
+             Tuned on AUC-ROC
+Segments    → K-Means clustering
+             RFM + CLV scoring
+Output      → Streamlit prototype dashboard
+             + Full technical report</pre>
+      </div>
+      <div style="font-size:10px;color:#333;margin-top:12px;letter-spacing:1px;">▸ CLICK TO EXPAND</div>
+    </div>
+
+    <div class="project-card" onclick="window.open('https://github.com/abhinavmishragsv-analytics/Retail-Sales-Forecasting-Project','_blank')">
+      <div class="pc-badge ts">⬤ Time-Series</div>
+      <div class="pc-name">Retail Sales Forecasting</div>
+      <p class="pc-desc">Time-series forecasting on real retail data. Demand prediction pipeline with trend decomposition and seasonal analysis.</p>
+      <div class="pc-stack">
+        <span class="pc-tech">Python</span><span class="pc-tech">Pandas</span><span class="pc-tech">Matplotlib</span><span class="pc-tech">Jupyter</span>
+      </div>
+      <div style="font-size:10px;color:#88aaff;margin-top:16px;letter-spacing:1px;">↗ OPEN ON GITHUB</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- STACK -->
+<section id="stack" style="max-width:1100px;margin:0 auto;padding:80px 60px;">
+  <div class="section-label">// 04</div>
+  <div class="section-title">$ cat <span>./stack.json</span></div>
+  <div class="stack-grid">
+    <div class="stack-group">
+      <div class="sg-label">Languages</div>
+      <div class="sg-items">
+        <div class="sg-item">Python</div>
+        <div class="sg-item">C / C++</div>
+        <div class="sg-item">SQL</div>
+      </div>
+    </div>
+    <div class="stack-group">
+      <div class="sg-label">ML / Data</div>
+      <div class="sg-items">
+        <div class="sg-item">Scikit-Learn</div>
+        <div class="sg-item">XGBoost</div>
+        <div class="sg-item">Pandas · NumPy</div>
+        <div class="sg-item">Matplotlib · Seaborn</div>
+      </div>
+    </div>
+    <div class="stack-group">
+      <div class="sg-label">Deploy / Viz</div>
+      <div class="sg-items">
+        <div class="sg-item">Streamlit</div>
+        <div class="sg-item">Power BI</div>
+        <div class="sg-item">Git / GitHub</div>
+      </div>
+    </div>
+    <div class="stack-group">
+      <div class="sg-label">Concepts</div>
+      <div class="sg-items">
+        <div class="sg-item">EDA & Feature Eng.</div>
+        <div class="sg-item">Classification / Clustering</div>
+        <div class="sg-item">System Design</div>
+        <div class="sg-item">Analytics Pipelines</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact" style="max-width:1100px;margin:0 auto;padding:80px 60px;">
+  <div class="section-label">// 05</div>
+  <div class="section-title">$ ping <span>./connect</span></div>
+  <div class="contact-box">
+    <p style="font-size:13px;color:#666;line-height:1.9;">I'm actively looking for internships and collaborations in <span style="color:#39FF14">data science, analytics, and AI systems</span>. If you're building something interesting — let's talk.</p>
+    <div class="contact-links">
+      <a class="contact-link" href="https://www.linkedin.com/in/abhinavamishra/" target="_blank">
+        <span>LinkedIn</span>in/abhinavamishra
+      </a>
+      <a class="contact-link" href="https://github.com/abhinavmishragsv-analytics" target="_blank">
+        <span>GitHub</span>abhinavmishragsv-analytics
+      </a>
+      <a class="contact-link" href="https://x.com/2005_mishra" target="_blank">
+        <span>X / Twitter</span>@2005_mishra
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div>Built with <span>data > assumptions</span></div>
+  <div>Abhinav Mishra © 2026</div>
+</footer>
+
+<script>
+const bootLines = [
+  {text: 'BIOS v2.0.28 · Gati Shakti University', cls: 'dim'},
+  {text: 'Initializing kernel . . . OK', cls: ''},
+  {text: 'Loading modules: [python] [ml] [analytics] [streamlit]', cls: ''},
+  {text: 'Mounting internship.log . . . OK', cls: ''},
+  {text: '  [DFCCIL]          → AI Decision Support System   DEPLOYED ✓', cls: 'yellow'},
+  {text: '  [Indian Railways] → DRM Office Delhi             DONE ✓', cls: ''},
+  {text: 'Loading achievement: IIT Guwahati Bootcamp — TOP 10% ✓', cls: 'yellow'},
+  {text: 'Connecting to github.com/abhinavmishragsv-analytics . . . OK', cls: ''},
+  {text: '', cls: ''},
+  {text: 'SYSTEM READY. LAUNCHING PORTFOLIO . . .', cls: 'yellow'},
+];
+
+const container = document.getElementById('boot-lines');
+const cursor = document.getElementById('boot-cursor');
+let i = 0;
+
+function nextLine() {
+  if (i < bootLines.length) {
+    const div = document.createElement('div');
+    div.className = 'boot-line show ' + bootLines[i].cls;
+    div.textContent = bootLines[i].text || '\u00a0';
+    container.appendChild(div);
+    container.appendChild(cursor);
+    i++;
+    setTimeout(nextLine, i === bootLines.length ? 600 : 180);
+  } else {
+    setTimeout(() => {
+      const boot = document.getElementById('boot');
+      boot.style.transition = 'opacity 0.6s';
+      boot.style.opacity = '0';
+      setTimeout(() => { boot.style.display = 'none'; }, 600);
+    }, 500);
+  }
+}
+
+setTimeout(nextLine, 400);
+
+function toggleExpand(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+}
+
+const items = document.querySelectorAll('.tl-item');
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+}, {threshold: 0.2});
+items.forEach(el => obs.observe(el));
+</script>
+</body>
+</html>
