@@ -2,144 +2,258 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Abhinav Mishra — AI &amp; Data Systems</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
+:root{
+  --bg:#000;
+  --green:#39FF14;
+  --yellow:#FFFF33;
+  --blue:#88aaff;
+  --border:#111;
+  --border2:#1a1a1a;
+  --dim:#333;
+  --muted:#555;
+  --muted2:#666;
+}
 *{margin:0;padding:0;box-sizing:border-box;}
-body{background:#000;color:#39FF14;font-family:'Courier New',monospace;overflow-x:hidden;cursor:default;}
+body{background:var(--bg);color:var(--green);font-family:'JetBrains Mono','Courier New',monospace;overflow-x:hidden;cursor:default;}
 ::-webkit-scrollbar{width:4px;}
 ::-webkit-scrollbar-track{background:#000;}
-::-webkit-scrollbar-thumb{background:#39FF14;}
+::-webkit-scrollbar-thumb{background:var(--green);}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:0.001ms !important;animation-iteration-count:1 !important;transition-duration:0.001ms !important;scroll-behavior:auto !important;}
+}
 
 /* SCANLINE overlay */
 body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.05) 2px,rgba(0,0,0,0.05) 4px);pointer-events:none;z-index:999;}
 
+/* ALTITUDE TAPE — scroll progress, right edge */
+#alt-tape{position:fixed;right:0;top:0;width:5px;height:100vh;background:#0a0a0a;z-index:998;border-left:1px solid var(--border);}
+#alt-tape-fill{position:absolute;bottom:0;left:0;width:100%;background:linear-gradient(to top,var(--green),var(--yellow));box-shadow:0 0 8px var(--green);height:0%;}
+#alt-tape-readout{position:fixed;right:10px;top:50%;transform:translateY(-50%) rotate(90deg);transform-origin:right center;font-size:9px;letter-spacing:3px;color:var(--dim);z-index:998;white-space:nowrap;}
+
 /* NAV */
-nav{position:fixed;top:0;width:100%;background:rgba(0,0,0,0.9);border-bottom:1px solid #39FF14;padding:12px 40px;display:flex;justify-content:space-between;align-items:center;z-index:100;backdrop-filter:blur(4px);}
-.nav-logo{color:#39FF14;font-size:14px;letter-spacing:2px;text-transform:uppercase;}
+nav{position:fixed;top:0;width:100%;background:rgba(0,0,0,0.9);border-bottom:1px solid var(--green);padding:12px 40px;display:flex;justify-content:space-between;align-items:center;z-index:100;backdrop-filter:blur(4px);}
+.nav-logo{color:var(--green);font-size:14px;letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:8px;font-family:'Chakra Petch',monospace;}
+.nav-status-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:blink 1.6s infinite;}
 .nav-links{display:flex;gap:24px;}
-.nav-links a{color:#39FF14;text-decoration:none;font-size:12px;letter-spacing:1px;opacity:0.7;transition:opacity 0.2s;}
-.nav-links a:hover{opacity:1;text-shadow:0 0 8px #39FF14;}
+.nav-links a{color:var(--green);text-decoration:none;font-size:11px;letter-spacing:1.5px;opacity:0.7;transition:opacity 0.2s;}
+.nav-links a:hover{opacity:1;text-shadow:0 0 8px var(--green);}
+@media(max-width:680px){.nav-links{gap:14px;}.nav-links a{font-size:9px;}}
 
 /* HERO */
-#hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:80px 60px 40px;position:relative;}
+#hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:80px 60px 40px;position:relative;overflow:hidden;}
 .grid-bg{position:absolute;top:0;left:0;width:100%;height:100%;background-image:linear-gradient(rgba(57,255,20,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(57,255,20,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;}
-.terminal-box{max-width:800px;position:relative;z-index:1;}
-.prompt-line{font-size:13px;color:#666;margin-bottom:4px;letter-spacing:1px;}
-.hero-name{font-size:clamp(36px,6vw,72px);font-weight:700;line-height:1;color:#39FF14;text-shadow:0 0 40px rgba(57,255,20,0.4);letter-spacing:-1px;margin:8px 0;}
-.hero-title{font-size:14px;color:#FFFF33;letter-spacing:4px;text-transform:uppercase;margin:16px 0 8px;}
-.hero-sub{font-size:13px;color:#555;line-height:1.8;max-width:560px;margin:8px 0 32px;}
-.hero-sub span{color:#39FF14;}
+
+/* HUD corner viewfinder brackets */
+.hud-corner{position:absolute;width:26px;height:26px;border-color:var(--green);opacity:0.5;pointer-events:none;z-index:2;}
+.hud-corner.tl{top:80px;left:24px;border-top:1px solid;border-left:1px solid;}
+.hud-corner.tr{top:80px;right:24px;border-top:1px solid;border-right:1px solid;}
+.hud-corner.bl{bottom:24px;left:24px;border-bottom:1px solid;border-left:1px solid;}
+.hud-corner.br{bottom:24px;right:24px;border-bottom:1px solid;border-right:1px solid;}
+
+/* HUD telemetry readouts */
+.hud-tel{position:absolute;font-size:10px;letter-spacing:2px;color:var(--green);opacity:0.75;z-index:2;line-height:1.6;}
+.hud-tel.alt{top:96px;left:56px;}
+.hud-tel.hdg{top:96px;right:56px;text-align:right;}
+.hud-tel.spd{bottom:40px;left:56px;}
+.hud-tel.call{bottom:40px;right:56px;text-align:right;}
+.hud-tel .val{color:var(--yellow);font-weight:700;}
+@media(max-width:900px){.hud-tel,.hud-corner{display:none;}}
+
+/* Radar */
+.radar-wrap{position:absolute;right:20px;top:50%;transform:translateY(-50%);width:320px;height:320px;z-index:1;opacity:0.9;}
+.radar-circle{position:relative;width:100%;height:100%;border-radius:50%;border:1px solid rgba(57,255,20,0.3);background:radial-gradient(circle,rgba(57,255,20,0.05),transparent 70%);}
+.radar-ring{position:absolute;border:1px solid rgba(57,255,20,0.14);border-radius:50%;}
+.radar-ring.r1{inset:16%;}
+.radar-ring.r2{inset:34%;}
+.radar-ring.r3{inset:52%;}
+.radar-crosshair{position:absolute;inset:0;}
+.radar-crosshair::before,.radar-crosshair::after{content:'';position:absolute;background:rgba(57,255,20,0.15);}
+.radar-crosshair::before{left:0;right:0;top:50%;height:1px;}
+.radar-crosshair::after{top:0;bottom:0;left:50%;width:1px;}
+.radar-sweep{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,rgba(57,255,20,0.4),transparent 30%);animation:sweep 4.5s linear infinite;mix-blend-mode:screen;}
+@keyframes sweep{to{transform:rotate(360deg);}}
+.radar-center{position:absolute;top:50%;left:50%;width:6px;height:6px;background:var(--green);border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 10px var(--green);}
+.radar-blip{position:absolute;top:50%;left:50%;width:6px;height:6px;background:var(--yellow);border-radius:50%;box-shadow:0 0 8px var(--yellow);transform:translate(-50%,-50%) rotate(var(--angle)) translate(var(--r)) rotate(calc(-1 * var(--angle)));animation:blipPulse 2.4s ease-in-out infinite;animation-delay:var(--delay,0s);cursor:default;}
+@keyframes blipPulse{0%,100%{opacity:0.5;transform:translate(-50%,-50%) rotate(var(--angle)) translate(var(--r)) rotate(calc(-1 * var(--angle))) scale(1);}50%{opacity:1;transform:translate(-50%,-50%) rotate(var(--angle)) translate(var(--r)) rotate(calc(-1 * var(--angle))) scale(1.6);}}
+.radar-blip::after{content:attr(data-label);position:absolute;bottom:14px;left:50%;transform:translateX(-50%);font-size:9px;letter-spacing:1px;color:var(--yellow);background:#000;border:1px solid var(--border2);padding:2px 6px;white-space:nowrap;opacity:0;transition:opacity 0.2s;pointer-events:none;}
+.radar-blip:hover::after{opacity:1;}
+@media(max-width:1100px){.radar-wrap{opacity:0.35;width:260px;height:260px;}}
+@media(max-width:680px){.radar-wrap{display:none;}}
+
+.terminal-box{max-width:800px;position:relative;z-index:3;}
+.prompt-line{font-size:13px;color:var(--muted2);margin-bottom:4px;letter-spacing:1px;}
+.hero-name{font-family:'Chakra Petch',monospace;font-size:clamp(36px,6vw,72px);font-weight:700;line-height:1;color:var(--green);text-shadow:0 0 40px rgba(57,255,20,0.4);letter-spacing:-1px;margin:8px 0;position:relative;display:inline-block;}
+.hero-name.glitch::before,.hero-name.glitch::after{content:'ABHINAV MISHRA';position:absolute;top:0;left:0;width:100%;overflow:hidden;}
+.hero-name.glitch::before{color:var(--blue);animation:glitchTop 6s infinite;clip-path:inset(0 0 60% 0);}
+.hero-name.glitch::after{color:var(--yellow);animation:glitchBot 6s infinite;clip-path:inset(60% 0 0 0);}
+@keyframes glitchTop{0%,94%,100%{transform:translate(0,0);opacity:0;}95%{transform:translate(-3px,-1px);opacity:0.7;}96%{transform:translate(3px,1px);opacity:0.7;}97%{opacity:0;}}
+@keyframes glitchBot{0%,94%,100%{transform:translate(0,0);opacity:0;}95%{transform:translate(3px,1px);opacity:0.7;}96%{transform:translate(-3px,-1px);opacity:0.7;}97%{opacity:0;}}
+.hero-title{font-size:14px;color:var(--yellow);letter-spacing:4px;text-transform:uppercase;margin:16px 0 8px;}
+.hero-sub{font-size:13px;color:var(--muted);line-height:1.8;max-width:560px;margin:8px 0 32px;}
+.hero-sub span{color:var(--green);}
 .blink{animation:blink 1s infinite;}
 @keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
 .status-row{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;}
-.status-pill{background:#0a1a04;border:1px solid #39FF14;padding:6px 14px;font-size:11px;letter-spacing:1px;color:#39FF14;}
-.status-pill.yellow{border-color:#FFFF33;color:#FFFF33;background:#1a1a04;}
+.status-pill{background:#0a1a04;border:1px solid var(--green);padding:6px 14px;font-size:11px;letter-spacing:1px;color:var(--green);}
+.status-pill.yellow{border-color:var(--yellow);color:var(--yellow);background:#1a1a04;}
 .cta-row{display:flex;gap:12px;margin-top:32px;}
-.btn{padding:10px 24px;font-size:12px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-family:'Courier New',monospace;text-decoration:none;transition:all 0.2s;}
-.btn-primary{background:#39FF14;color:#000;border:1px solid #39FF14;}
-.btn-primary:hover{background:transparent;color:#39FF14;box-shadow:0 0 20px rgba(57,255,20,0.3);}
-.btn-secondary{background:transparent;color:#39FF14;border:1px solid #39FF14;}
+.btn{padding:10px 24px;font-size:12px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-family:'JetBrains Mono',monospace;text-decoration:none;transition:all 0.2s;display:inline-block;}
+.btn-primary{background:var(--green);color:#000;border:1px solid var(--green);}
+.btn-primary:hover{background:transparent;color:var(--green);box-shadow:0 0 20px rgba(57,255,20,0.3);}
+.btn-secondary{background:transparent;color:var(--green);border:1px solid var(--green);}
 .btn-secondary:hover{background:#0a1a04;box-shadow:0 0 20px rgba(57,255,20,0.2);}
-.scroll-hint{position:absolute;bottom:32px;left:60px;font-size:11px;color:#333;letter-spacing:2px;animation:pulse 2s infinite;}
+.scroll-hint{position:absolute;bottom:32px;left:60px;font-size:11px;color:var(--dim);letter-spacing:2px;animation:pulse 2s infinite;z-index:3;}
 @keyframes pulse{0%,100%{opacity:0.3;}50%{opacity:1;}}
 
 /* SECTION */
 section{padding:80px 60px;max-width:1100px;margin:0 auto;}
-.section-label{font-size:11px;color:#FFFF33;letter-spacing:4px;text-transform:uppercase;margin-bottom:8px;}
-.section-title{font-size:clamp(22px,3vw,36px);color:#39FF14;margin-bottom:40px;border-bottom:1px solid #111;padding-bottom:16px;}
-.section-title span{color:#FFFF33;}
+.section-label{font-size:11px;color:var(--yellow);letter-spacing:4px;text-transform:uppercase;margin-bottom:8px;}
+.section-title{font-family:'Chakra Petch',monospace;font-size:clamp(22px,3vw,36px);color:var(--green);margin-bottom:8px;border-bottom:1px solid var(--border);padding-bottom:16px;}
+.section-title span{color:var(--yellow);}
+.section-subtitle{font-size:11px;color:var(--dim);letter-spacing:1px;margin-bottom:32px;}
 
 /* ABOUT */
 .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start;}
 .about-text{font-size:13px;line-height:2;color:#888;}
-.about-text strong{color:#39FF14;}
-.about-text em{color:#FFFF33;}
-.code-card{background:#0a0a0a;border:1px solid #1a1a1a;padding:24px;font-size:12px;line-height:1.9;}
-.code-card .kw{color:#FFFF33;}
-.code-card .str{color:#39FF14;}
-.code-card .comment{color:#333;}
-.code-card .fn{color:#88aaff;}
+.about-text strong{color:var(--green);}
+.about-text em{color:var(--yellow);font-style:normal;}
+.code-card{background:#0a0a0a;border:1px solid var(--border2);padding:24px;font-size:12px;line-height:1.9;}
+.code-card .kw{color:var(--yellow);}
+.code-card .str{color:var(--green);}
+.code-card .comment{color:var(--dim);}
+.code-card .fn{color:var(--blue);}
+@media(max-width:680px){.about-grid{grid-template-columns:1fr;}}
 
-/* TIMELINE */
+/* FLIGHT LOG TIMELINE */
 .timeline{position:relative;padding-left:32px;}
-.timeline::before{content:'';position:absolute;left:0;top:0;bottom:0;width:1px;background:linear-gradient(to bottom,#39FF14,#FFFF33,#333);}
-.tl-item{position:relative;margin-bottom:40px;opacity:0;transform:translateX(-10px);transition:all 0.5s;}
+.timeline::before{content:'';position:absolute;left:0;top:0;bottom:0;width:1px;background:repeating-linear-gradient(to bottom,var(--green) 0,var(--green) 6px,transparent 6px,transparent 12px);}
+.flight-plane{position:absolute;left:0;top:0;width:20px;height:20px;transform:translate(-50%,-50%) rotate(180deg);z-index:5;pointer-events:none;transition:top 0.08s ease-out;filter:drop-shadow(0 0 6px var(--green));}
+.flight-plane::before{content:'';position:absolute;left:50%;top:100%;width:2px;height:70px;transform:translateX(-50%);background:linear-gradient(to bottom,var(--green),transparent);opacity:0.5;}
+.tl-item{position:relative;margin-bottom:44px;opacity:0;transform:translateX(-10px);transition:all 0.5s;}
 .tl-item.visible{opacity:1;transform:translateX(0);}
-.tl-dot{position:absolute;left:-36px;top:4px;width:10px;height:10px;background:#39FF14;border:2px solid #000;box-shadow:0 0 8px #39FF14;}
-.tl-badge{display:inline-block;font-size:10px;letter-spacing:2px;padding:3px 10px;border:1px solid #333;color:#555;text-transform:uppercase;margin-bottom:8px;}
-.tl-badge.active{border-color:#39FF14;color:#39FF14;}
-.tl-org{font-size:16px;color:#39FF14;margin-bottom:4px;letter-spacing:1px;}
-.tl-role{font-size:12px;color:#FFFF33;margin-bottom:8px;text-transform:uppercase;letter-spacing:2px;}
-.tl-desc{font-size:12px;color:#666;line-height:1.9;}
+.tl-dot{position:absolute;left:-36px;top:4px;width:10px;height:10px;background:var(--green);border:2px solid #000;box-shadow:0 0 8px var(--green);border-radius:50%;}
+.tl-code{position:absolute;left:-84px;top:-2px;font-family:'Chakra Petch',monospace;font-size:11px;font-weight:600;color:var(--dim);border:1px solid var(--border2);padding:2px 6px;letter-spacing:1px;}
+.tl-item.now .tl-code{color:var(--yellow);border-color:var(--yellow);}
+@media(max-width:680px){.tl-code{display:none;}.flight-plane{display:none;}}
+.tl-badge{display:inline-block;font-size:10px;letter-spacing:2px;padding:3px 10px;border:1px solid var(--dim);color:var(--muted);text-transform:uppercase;margin-bottom:8px;}
+.tl-badge.active{border-color:var(--green);color:var(--green);}
+.tl-org{font-size:16px;color:var(--green);margin-bottom:4px;letter-spacing:1px;}
+.tl-role{font-size:12px;color:var(--yellow);margin-bottom:8px;text-transform:uppercase;letter-spacing:2px;}
+.tl-desc{font-size:12px;color:var(--muted2);line-height:1.9;}
 .tl-desc strong{color:#aaa;}
 .tl-tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
-.tag{font-size:10px;padding:3px 10px;border:1px solid #1a1a1a;color:#444;letter-spacing:1px;}
+.tag{font-size:10px;padding:3px 10px;border:1px solid var(--border2);color:#444;letter-spacing:1px;}
+
+/* DEPARTURES BOARD */
+.board{background:#050505;border:1px solid var(--border2);margin-bottom:40px;overflow-x:auto;}
+.board-header,.board-row{display:grid;grid-template-columns:0.9fr 1.6fr 1.6fr 1fr;gap:10px;padding:12px 18px;align-items:center;min-width:560px;}
+.board-header{border-bottom:1px solid var(--border);font-size:10px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;}
+.board-row{border-bottom:1px solid var(--border);font-size:12px;letter-spacing:1px;}
+.board-row:last-child{border-bottom:none;}
+.board-row:hover{background:#0a0a0a;}
+.flap-char{display:inline-block;min-width:0.62em;}
+.board-status{display:inline-flex;align-items:center;gap:6px;}
+.board-status .dot{width:6px;height:6px;border-radius:50%;}
+.status-deployed .dot{background:var(--green);box-shadow:0 0 6px var(--green);}
+.status-deployed{color:var(--green);}
+.status-boarding .dot{background:var(--yellow);box-shadow:0 0 6px var(--yellow);animation:blink 1.4s infinite;}
+.status-boarding{color:var(--yellow);}
+.status-flight .dot{background:var(--yellow);box-shadow:0 0 6px var(--yellow);}
+.status-flight{color:var(--yellow);}
+.status-landed .dot{background:var(--blue);box-shadow:0 0 6px var(--blue);}
+.status-landed{color:var(--blue);}
 
 /* PROJECTS */
 .projects-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;}
-.project-card{background:#050505;border:1px solid #111;padding:24px;position:relative;overflow:hidden;cursor:pointer;transition:all 0.3s;}
-.project-card::before{content:'';position:absolute;top:0;left:0;width:100%;height:2px;background:linear-gradient(90deg,#39FF14,#FFFF33);transform:scaleX(0);transition:transform 0.3s;transform-origin:left;}
+.project-card{background:#050505;border:1px solid var(--border);padding:24px;position:relative;overflow:hidden;cursor:pointer;transition:all 0.3s;}
+.project-card::before{content:'';position:absolute;top:0;left:0;width:100%;height:2px;background:linear-gradient(90deg,var(--green),var(--yellow));transform:scaleX(0);transition:transform 0.3s;transform-origin:left;}
 .project-card:hover{border-color:#333;background:#080808;}
 .project-card:hover::before{transform:scaleX(1);}
 .project-card:hover .pc-name{text-shadow:0 0 12px rgba(57,255,20,0.5);}
 .pc-badge{font-size:9px;letter-spacing:2px;padding:3px 8px;border:1px solid;margin-bottom:16px;display:inline-block;text-transform:uppercase;}
-.pc-badge.deployed{border-color:#39FF14;color:#39FF14;background:#0a1a04;}
-.pc-badge.ml{border-color:#FFFF33;color:#FFFF33;background:#1a1a04;}
-.pc-badge.ts{border-color:#88aaff;color:#88aaff;background:#04041a;}
-.pc-name{font-size:16px;color:#39FF14;margin-bottom:8px;letter-spacing:0.5px;}
-.pc-desc{font-size:12px;color:#555;line-height:1.8;margin-bottom:16px;}
+.pc-badge.deployed{border-color:var(--green);color:var(--green);background:#0a1a04;}
+.pc-badge.ml{border-color:var(--yellow);color:var(--yellow);background:#1a1a04;}
+.pc-badge.ts{border-color:var(--blue);color:var(--blue);background:#04041a;}
+.pc-badge.aero{border-color:var(--yellow);color:var(--yellow);background:#1a1a04;}
+.pc-score{float:right;font-size:9px;color:var(--green);border:1px solid var(--green);padding:3px 8px;letter-spacing:1px;}
+.pc-name{font-size:16px;color:var(--green);margin-bottom:8px;letter-spacing:0.5px;}
+.pc-desc{font-size:12px;color:var(--muted);line-height:1.8;margin-bottom:16px;}
 .pc-stack{display:flex;gap:6px;flex-wrap:wrap;}
-.pc-tech{font-size:10px;padding:2px 8px;background:#0a0a0a;border:1px solid #1a1a1a;color:#444;}
-.pc-expand{margin-top:16px;border-top:1px solid #111;padding-top:12px;display:none;}
+.pc-tech{font-size:10px;padding:2px 8px;background:#0a0a0a;border:1px solid var(--border2);color:#444;}
+.pc-expand{margin-top:16px;border-top:1px solid var(--border);padding-top:12px;display:none;}
 .pc-expand.open{display:block;}
-.pc-expand pre{font-size:11px;color:#39FF14;line-height:1.7;background:#000;padding:12px;border-left:2px solid #39FF14;overflow-x:auto;}
+.pc-expand pre{font-size:11px;color:var(--green);line-height:1.7;background:#000;padding:12px;border-left:2px solid var(--green);overflow-x:auto;white-space:pre-wrap;}
 
 /* STACK */
 .stack-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;}
-.stack-group{background:#050505;border:1px solid #111;padding:20px;}
-.sg-label{font-size:10px;color:#FFFF33;letter-spacing:3px;text-transform:uppercase;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid #111;}
+.stack-group{background:#050505;border:1px solid var(--border);padding:20px;}
+.sg-label{font-size:10px;color:var(--yellow);letter-spacing:3px;text-transform:uppercase;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border);}
 .sg-items{display:flex;flex-direction:column;gap:8px;}
-.sg-item{display:flex;align-items:center;gap:10px;font-size:12px;color:#555;}
-.sg-item::before{content:'▸';color:#39FF14;font-size:10px;}
-.sg-item:hover{color:#39FF14;}
+.sg-item{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);}
+.sg-item::before{content:'▸';color:var(--green);font-size:10px;}
+.sg-item:hover{color:var(--green);}
 
 /* STATS */
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:48px;}
-.stat-card{background:#050505;border:1px solid #111;padding:20px;text-align:center;position:relative;overflow:hidden;}
-.stat-card::after{content:'';position:absolute;bottom:0;left:0;width:100%;height:1px;background:linear-gradient(90deg,transparent,#39FF14,transparent);}
-.stat-num{font-size:32px;color:#39FF14;font-weight:700;text-shadow:0 0 20px rgba(57,255,20,0.3);}
-.stat-label{font-size:10px;color:#444;letter-spacing:2px;text-transform:uppercase;margin-top:4px;}
+.stat-card{background:#050505;border:1px solid var(--border);padding:20px;text-align:center;position:relative;overflow:hidden;}
+.stat-card::after{content:'';position:absolute;bottom:0;left:0;width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--green),transparent);}
+.stat-num{font-family:'Chakra Petch',monospace;font-size:32px;color:var(--green);font-weight:700;text-shadow:0 0 20px rgba(57,255,20,0.3);}
+.stat-label{font-size:10px;color:var(--dim);letter-spacing:2px;text-transform:uppercase;margin-top:4px;}
 
 /* CONTACT */
-.contact-box{background:#050505;border:1px solid #39FF14;padding:40px;max-width:600px;position:relative;}
-.contact-box::before{content:'OPEN FOR OPPORTUNITIES';position:absolute;top:-10px;left:20px;background:#000;padding:0 8px;font-size:10px;color:#FFFF33;letter-spacing:2px;}
+.contact-box{background:#050505;border:1px solid var(--green);padding:40px;max-width:600px;position:relative;}
+.contact-box::before{content:'ATC TOWER · CLEARED TO CONTACT';position:absolute;top:-10px;left:20px;background:#000;padding:0 8px;font-size:10px;color:var(--yellow);letter-spacing:2px;}
 .contact-links{display:flex;flex-direction:column;gap:16px;margin-top:24px;}
-.contact-link{display:flex;align-items:center;gap:16px;color:#555;font-size:13px;text-decoration:none;transition:color 0.2s;padding:8px 0;border-bottom:1px solid #111;}
-.contact-link:hover{color:#39FF14;}
-.contact-link span{color:#FFFF33;font-size:11px;letter-spacing:2px;min-width:80px;}
+.contact-link{display:flex;align-items:center;gap:16px;color:var(--muted);font-size:13px;text-decoration:none;transition:color 0.2s;padding:8px 0;border-bottom:1px solid var(--border);}
+.contact-link:hover{color:var(--green);}
+.contact-link span{color:var(--yellow);font-size:11px;letter-spacing:2px;min-width:80px;}
 
 /* FOOTER */
-footer{border-top:1px solid #111;padding:24px 60px;display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#333;}
-footer span{color:#39FF14;}
+footer{border-top:1px solid var(--border);padding:24px 60px;display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--dim);flex-wrap:wrap;gap:8px;}
+footer span{color:var(--green);}
+.footer-status{display:flex;align-items:center;gap:6px;}
+.footer-status .dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:blink 1.6s infinite;}
+.footer-hint{font-size:10px;color:#1e1e1e;}
+
+/* EASTER EGG */
+.easter-jet{position:fixed;font-size:40px;color:var(--green);left:-80px;bottom:-80px;z-index:2000;text-shadow:0 0 20px var(--green),0 0 40px var(--green);transform:rotate(-35deg);animation:jetFly 2.2s ease-in forwards;pointer-events:none;}
+@keyframes jetFly{to{left:110vw;bottom:110vh;}}
+.easter-msg{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#000;border:1px solid var(--yellow);color:var(--yellow);padding:8px 20px;font-size:11px;letter-spacing:2px;z-index:2001;animation:fadeInOut 2.6s ease forwards;white-space:nowrap;}
+@keyframes fadeInOut{0%{opacity:0;}15%{opacity:1;}85%{opacity:1;}100%{opacity:0;}}
 
 /* BOOT SCREEN */
 #boot{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:1000;display:flex;flex-direction:column;justify-content:center;padding:60px;font-size:13px;line-height:2;}
-#boot-lines{max-width:700px;}
-.boot-line{color:#39FF14;opacity:0;}
+#boot-lines{max-width:720px;}
+.boot-line{color:var(--green);opacity:0;}
 .boot-line.show{opacity:1;}
-.boot-line.dim{color:#333;}
-.boot-line.yellow{color:#FFFF33;}
-#boot-cursor{display:inline-block;width:8px;height:14px;background:#39FF14;vertical-align:middle;animation:blink 0.8s infinite;}
+.boot-line.dim{color:var(--dim);}
+.boot-line.yellow{color:var(--yellow);}
+#boot-cursor{display:inline-block;width:8px;height:14px;background:var(--green);vertical-align:middle;animation:blink 0.8s infinite;}
 
 @media(max-width:680px){
   nav{padding:12px 20px;}
   #hero,section{padding:80px 24px 40px;}
   .about-grid,.stats-row{grid-template-columns:1fr;}
-  footer{flex-direction:column;gap:8px;padding:24px;}
+  .stats-row{grid-template-columns:repeat(2,1fr);}
+  footer{flex-direction:column;gap:8px;padding:24px;align-items:flex-start;}
+  #alt-tape,#alt-tape-readout{display:none;}
+  .board-header{display:none;}
+  .board-row{grid-template-columns:1fr;gap:2px;padding:12px 14px;}
 }
 </style>
 </head>
 <body>
+
+<!-- ALTITUDE TAPE (scroll progress) -->
+<div id="alt-tape"><div id="alt-tape-fill"></div></div>
+<div id="alt-tape-readout">SCROLL <span id="scrollPct">0</span>%</div>
 
 <!-- BOOT SCREEN -->
 <div id="boot">
@@ -149,32 +263,61 @@ footer span{color:#39FF14;}
 
 <!-- NAV -->
 <nav>
-  <div class="nav-logo">AM<span style="color:#FFFF33">.</span>dev</div>
+  <div class="nav-logo"><span class="nav-status-dot"></span>AM<span style="color:var(--yellow)">.</span>28</div>
   <div class="nav-links">
-    <a href="#about">about</a>
-    <a href="#experience">experience</a>
-    <a href="#projects">projects</a>
-    <a href="#stack">stack</a>
-    <a href="#contact">contact</a>
+    <a href="#about" aria-label="About">MANIFEST</a>
+    <a href="#experience" aria-label="Experience">FLIGHT LOG</a>
+    <a href="#projects" aria-label="Projects">DEPARTURES</a>
+    <a href="#stack" aria-label="Skills">AVIONICS</a>
+    <a href="#contact" aria-label="Contact">TOWER</a>
   </div>
 </nav>
 
 <!-- HERO -->
 <div id="hero">
   <div class="grid-bg"></div>
+
+  <div class="hud-corner tl"></div>
+  <div class="hud-corner tr"></div>
+  <div class="hud-corner bl"></div>
+  <div class="hud-corner br"></div>
+
+  <div class="hud-tel alt">ALT<br/><span class="val" id="altVal">12,400</span> FT ▲</div>
+  <div class="hud-tel hdg">HDG<br/><span class="val">028°</span> GSV</div>
+  <div class="hud-tel spd">SPD<br/>MACH <span class="val" id="spdVal">0.82</span></div>
+  <div class="hud-tel call">CALLSIGN<br/><span class="val">AM-28</span></div>
+
+  <div class="radar-wrap" aria-hidden="true">
+    <div class="radar-circle">
+      <div class="radar-ring r1"></div>
+      <div class="radar-ring r2"></div>
+      <div class="radar-ring r3"></div>
+      <div class="radar-crosshair"></div>
+      <div class="radar-sweep"></div>
+      <div class="radar-center"></div>
+      <div class="radar-blip" style="--angle:15deg;--r:44%;--delay:0.1s" data-label="Python"></div>
+      <div class="radar-blip" style="--angle:75deg;--r:36%;--delay:0.5s" data-label="Machine Learning"></div>
+      <div class="radar-blip" style="--angle:140deg;--r:46%;--delay:0.9s" data-label="Freight Ops"></div>
+      <div class="radar-blip" style="--angle:200deg;--r:32%;--delay:1.3s" data-label="Signaling &amp; Telecom"></div>
+      <div class="radar-blip" style="--angle:255deg;--r:42%;--delay:0.3s" data-label="Credit Risk"></div>
+      <div class="radar-blip" style="--angle:320deg;--r:38%;--delay:0.7s" data-label="Digital Twin"></div>
+    </div>
+  </div>
+
   <div class="terminal-box">
-    <div class="prompt-line">abhinav@gsv:~$ ./introduce --self</div>
-    <h1 class="hero-name">ABHINAV<br/>MISHRA</h1>
+    <div class="prompt-line">abhinav@gsv:~$ ./pre-flight --introduce-self</div>
+    <h1 class="hero-name glitch">ABHINAV<br/>MISHRA</h1>
     <div class="hero-title">AI &amp; Data Science</div>
     <p class="hero-sub">
-      I build <span>AI systems</span> for real operational problems.<br/>
+      I build <span>AI systems</span> for real operational infrastructure —<br/>
+      freight corridors, airport ground ops, credit decisioning.<br/>
       Not demos — <span>deployed systems</span> that make decisions at scale.<br/>
-      <span style="color:#555;">GSV '28 · Ex DFCCIL · Ex Indian Railways</span>
+      <span style="color:var(--muted);">GSV '28 · Ex DFCCIL · Ex Indian Railways (S&amp;T)</span>
     </p>
     <div class="status-row">
-      <div class="status-pill">⬤ &nbsp;Available for Internships</div>
+      <div class="status-pill">⬤ &nbsp;Cleared for Takeoff · Open to Internships</div>
       <div class="status-pill yellow">Top 10% · IIT Guwahati Bootcamp</div>
-      <div class="status-pill">2 Internships Done</div>
+      <div class="status-pill">2 Internships Logged</div>
     </div>
     <div class="cta-row">
       <a href="#projects" class="btn btn-primary">View Projects</a>
@@ -185,18 +328,19 @@ footer span{color:#39FF14;}
 </div>
 
 <!-- ABOUT -->
-<section id="about" style="max-width:1100px;margin:0 auto;padding:80px 60px;">
+<section id="about">
   <div class="section-label">// 01</div>
-  <div class="section-title">$ whoami <span>—</span></div>
+  <div class="section-title">$ cat <span>manifest.json</span></div>
+  <div class="section-subtitle">// about</div>
   <div class="about-grid">
     <div class="about-text">
-      <p>I'm a second-year <strong>AI & Data Science</strong> student at <strong>Gati Shakti Vishwavidyalaya</strong>, India's first university dedicated to infrastructure and logistics — which is exactly where my work lives.</p>
+      <p>I'm a third-year <strong>AI &amp; Data Science</strong> student at <strong>Gati Shakti Vishwavidyalaya</strong> — India's first university built around infrastructure and logistics, which is exactly where my work lives: freight corridors, airport ground operations, and the systems that keep them moving.</p>
       <br/>
-      <p>At <em>DFCCIL</em>, I built a full production AI system to evaluate Goods Cargo Terminals across India's dedicated freight corridors — Schedule-I feasibility checks, site recommendation engines, opportunity indexing, all deployed.</p>
+      <p>At <em>DFCCIL</em> (Operations &amp; Business Development, Corporate Office, Noida), I built a full production AI system — <strong>GCT-DSS</strong> — to evaluate Goods Cargo Terminals across 115 stations on India's Dedicated Freight Corridors. It scored <strong>92/100</strong> in my final evaluation and is live on Streamlit Cloud.</p>
       <br/>
-      <p>Before that, <em>Indian Railways (DRM Office, Delhi)</em> — where I saw what data chaos looks like at national scale and learned why good systems matter.</p>
+      <p>Before that, at <em>Indian Railways' DRM Office, Delhi Division</em> — inside the <strong>Signaling &amp; Telecommunications (S&amp;T)</strong> department — I saw what a national-scale control system actually looks like, signal by signal.</p>
       <br/>
-      <p>I think in <strong>pipelines</strong>, build in <strong>Python</strong>, and believe the goal of any model is a <strong>decision</strong> — not a metric.</p>
+      <p>Now I'm reusing that same pipeline architecture to build <strong>AeroTwin</strong>, an AI digital twin for airport ground operations, alongside a credit risk platform for NBFCs. I think in <strong>pipelines</strong>, build in <strong>Python</strong>, and believe every model owes you a <strong>decision</strong> — not a metric.</p>
     </div>
     <div class="code-card">
       <div class="comment"># abhinav.py</div>
@@ -205,16 +349,15 @@ footer span{color:#39FF14;}
       &nbsp;&nbsp;<span class="kw">def</span> <span class="fn">__init__</span>(self):<br/>
       &nbsp;&nbsp;&nbsp;&nbsp;self.university = <span class="str">"GSV '28"</span><br/>
       &nbsp;&nbsp;&nbsp;&nbsp;self.major = <span class="str">"AI & Data Science"</span><br/>
-      &nbsp;&nbsp;&nbsp;&nbsp;self.location = <span class="str">"Vadodara / Delhi, IN"</span><br/>
+      &nbsp;&nbsp;&nbsp;&nbsp;self.base = <span class="str">"Noida, IN"</span><br/>
       <br/>
       &nbsp;&nbsp;&nbsp;&nbsp;self.internships = [<br/>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="str">"DFCCIL"</span>,<br/>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="str">"Indian Railways — DRM Delhi"</span><br/>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="str">"org"</span>: <span class="str">"DFCCIL"</span>, <span class="str">"dept"</span>: <span class="str">"Ops & Business Dev."</span>},<br/>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="str">"org"</span>: <span class="str">"Indian Railways"</span>, <span class="str">"dept"</span>: <span class="str">"S&T, DRM Delhi"</span>}<br/>
       &nbsp;&nbsp;&nbsp;&nbsp;]<br/>
       <br/>
-      &nbsp;&nbsp;&nbsp;&nbsp;self.achievement = <span class="str">"Top 10% · IIT-G"</span><br/>
-      &nbsp;&nbsp;&nbsp;&nbsp;self.club = <span class="str">"TechnoCrats GSV"</span><br/>
-      <br/>
+      &nbsp;&nbsp;&nbsp;&nbsp;self.building = [<span class="str">"Credit Risk SaaS"</span>, <span class="str">"AeroTwin ITS"</span>]<br/>
+      &nbsp;&nbsp;&nbsp;&nbsp;self.leads = <span class="str">"TechnoCrats, GSV"</span><br/>
       &nbsp;&nbsp;&nbsp;&nbsp;self.belief = <span class="str">"data > assumptions"</span><br/>
       <br/>
       &nbsp;&nbsp;<span class="kw">def</span> <span class="fn">goal</span>(self):<br/>
@@ -223,54 +366,57 @@ footer span{color:#39FF14;}
   </div>
 </section>
 
-<!-- EXPERIENCE -->
-<section id="experience" style="max-width:1100px;margin:0 auto;padding:80px 60px;">
+<!-- EXPERIENCE / FLIGHT LOG -->
+<section id="experience">
   <div class="section-label">// 02</div>
-  <div class="section-title">$ git log <span>--experience</span></div>
-  <div class="timeline">
+  <div class="section-title">$ cat <span>flight-log.json</span></div>
+  <div class="section-subtitle">// experience — route flown so far</div>
+  <div class="timeline" id="timelineEl">
+    <div class="flight-plane" id="flightPlane">✈</div>
 
-    <div class="tl-item">
-      <div class="tl-dot"></div>
-      <div class="tl-badge active">2025 — Present</div>
+    <div class="tl-item now">
+      <div class="tl-code">NOW</div>
+      <div class="tl-dot" style="background:var(--yellow);box-shadow:0 0 8px var(--yellow);"></div>
+      <div class="tl-badge active" style="border-color:var(--yellow);color:var(--yellow);">2026 — In Flight</div>
       <div class="tl-org">Gati Shakti Vishwavidyalaya</div>
-      <div class="tl-role">B.Tech · AI & Data Science</div>
-      <div class="tl-desc">India's first infrastructure-focused university. Building foundations in ML systems, analytics pipelines, and system design. <strong>Coordinator at TechnoCrats GSV</strong> — the college tech club.</div>
+      <div class="tl-role">B.Tech · AI &amp; Data Science · Head, TechnoCrats</div>
+      <div class="tl-desc">Balancing academics with two live builds: a <strong>Credit Risk SaaS</strong> platform for NBFCs (XGBoost + SHAP explainability) and <strong>AeroTwin</strong>, an AI digital twin for airport ground operations built on the GCT-DSS pipeline architecture. Also building at BeyondTech, and heading TechnoCrats, GSV's technical club.</div>
       <div class="tl-tags">
-        <span class="tag">Machine Learning</span>
-        <span class="tag">System Design</span>
-        <span class="tag">Python</span>
-        <span class="tag">Analytics</span>
+        <span class="tag">Credit Risk</span><span class="tag">Digital Twin</span><span class="tag">Leadership</span><span class="tag">XGBoost</span>
       </div>
     </div>
 
     <div class="tl-item">
-      <div class="tl-dot" style="background:#FFFF33;box-shadow:0 0 8px #FFFF33;"></div>
-      <div class="tl-badge" style="border-color:#FFFF33;color:#FFFF33;">2025 · Internship</div>
-      <div class="tl-org" style="color:#FFFF33;">DFCCIL</div>
-      <div class="tl-role">Operations Planning & Business Development</div>
-      <div class="tl-desc">Built an <strong>AI-powered Decision Support System</strong> for evaluating Goods Cargo Terminals across WDFC & EDFC. Shipped Schedule-I (feasibility) and Schedule-II (site recommendation) engines. Deployed to production on Streamlit Cloud with secure auth, KPI dashboards, PDF reports, and a station leaderboard using a custom Opportunity Index.</div>
+      <div class="tl-code">DFC</div>
+      <div class="tl-dot" style="background:var(--yellow);box-shadow:0 0 8px var(--yellow);"></div>
+      <div class="tl-badge" style="border-color:var(--yellow);color:var(--yellow);">2025 · Internship</div>
+      <div class="tl-org" style="color:var(--yellow);">DFCCIL</div>
+      <div class="tl-role">Operations &amp; Business Development · Corporate Office, Noida</div>
+      <div class="tl-desc">Built <strong>GCT-DSS</strong> end to end — an AI decision support system scoring 115 stations across the Western and Eastern Dedicated Freight Corridors. Random Forest + K-Means segmentation + Prophet demand forecasting (80.99% accuracy), a custom Industrial Ecosystem Index across 11 industry types, and Schedule-I feasibility + Schedule-II site-recommendation engines — deployed on Streamlit Cloud with authentication, PDF reporting, and a station leaderboard. <strong>Evaluated 92/100.</strong></div>
       <div class="tl-tags">
-        <span class="tag">Python</span><span class="tag">Streamlit</span><span class="tag">Power BI</span><span class="tag">Excel</span><span class="tag">Production Deploy</span>
+        <span class="tag">Python</span><span class="tag">Streamlit</span><span class="tag">Random Forest</span><span class="tag">Prophet</span><span class="tag">Production Deploy</span>
       </div>
     </div>
 
     <div class="tl-item">
-      <div class="tl-dot" style="background:#88aaff;box-shadow:0 0 8px #88aaff;"></div>
-      <div class="tl-badge" style="border-color:#88aaff;color:#88aaff;">2024 · Internship</div>
-      <div class="tl-org" style="color:#88aaff;">Indian Railways — DRM Office, Delhi</div>
-      <div class="tl-role">Operations Planning & Business Development</div>
-      <div class="tl-desc">Worked at the Divisional Railway Manager's office, Delhi Division. Gained deep exposure to how <strong>large-scale operational data</strong> is managed (and mismanaged) at national infrastructure scale.</div>
+      <div class="tl-code">DEL</div>
+      <div class="tl-dot" style="background:var(--blue);box-shadow:0 0 8px var(--blue);"></div>
+      <div class="tl-badge" style="border-color:var(--blue);color:var(--blue);">2024 · Internship</div>
+      <div class="tl-org" style="color:var(--blue);">Indian Railways — DRM Office, Delhi Division</div>
+      <div class="tl-role">Signaling &amp; Telecommunications (S&amp;T) Department</div>
+      <div class="tl-desc">Worked inside the S&amp;T wing at the Divisional Railway Manager's office — <strong>signaling systems, telecom infrastructure</strong>, and the operational data that keeps trains moving safely at national scale. First real look at infrastructure data at volume, and why disciplined systems beat spreadsheets.</div>
       <div class="tl-tags">
-        <span class="tag">Operations</span><span class="tag">Data Analysis</span><span class="tag">Logistics</span>
+        <span class="tag">Signaling</span><span class="tag">Telecom Infra</span><span class="tag">Operations</span><span class="tag">Data at Scale</span>
       </div>
     </div>
 
     <div class="tl-item">
+      <div class="tl-code">IITG</div>
       <div class="tl-dot" style="background:#555;"></div>
       <div class="tl-badge">2024 · Achievement</div>
       <div class="tl-org" style="color:#aaa;">IIT Guwahati — Consulting Bootcamp</div>
-      <div class="tl-role">Consulting & Analytics Club</div>
-      <div class="tl-desc">Ranked <strong>Top 10%</strong> nationally in a competitive consulting bootcamp run by the Consulting & Analytics Club at IIT Guwahati.</div>
+      <div class="tl-role">Consulting &amp; Analytics Club</div>
+      <div class="tl-desc">Ranked <strong>Top 10%</strong> nationally in a competitive consulting bootcamp run by the Consulting &amp; Analytics Club at IIT Guwahati.</div>
       <div class="tl-tags">
         <span class="tag">Strategy</span><span class="tag">Analytics</span><span class="tag">Case Studies</span>
       </div>
@@ -279,27 +425,60 @@ footer span{color:#39FF14;}
   </div>
 </section>
 
-<!-- PROJECTS -->
-<section id="projects" style="max-width:1100px;margin:0 auto;padding:80px 60px;">
+<!-- PROJECTS / DEPARTURES -->
+<section id="projects">
   <div class="section-label">// 03</div>
-  <div class="section-title">$ ls <span>./projects/</span></div>
+  <div class="section-title">$ cat <span>departures.log</span></div>
+  <div class="section-subtitle">// projects</div>
 
-  <!-- STATS -->
+  <!-- STATS — live from github.com/abhinavmishragsv-analytics -->
   <div class="stats-row">
-    <div class="stat-card"><div class="stat-num">3</div><div class="stat-label">Projects</div></div>
+    <div class="stat-card"><div class="stat-num">4</div><div class="stat-label">Featured Projects</div></div>
     <div class="stat-card"><div class="stat-num">1</div><div class="stat-label">In Production</div></div>
-    <div class="stat-card"><div class="stat-num">118</div><div class="stat-label">Contributions</div></div>
-    <div class="stat-card"><div class="stat-num">53</div><div class="stat-label">Commits</div></div>
+    <div class="stat-card"><div class="stat-num">18</div><div class="stat-label">Public Repos</div></div>
+    <div class="stat-card"><div class="stat-num">2</div><div class="stat-label">Stars Earned</div></div>
+  </div>
+
+  <!-- DEPARTURES BOARD -->
+  <div class="board" id="board">
+    <div class="board-header">
+      <span>Flight</span><span>Project</span><span>Route</span><span>Status</span>
+    </div>
+    <div class="board-row">
+      <span class="flap">AM-092</span>
+      <span class="flap">GCT-DSS</span>
+      <span class="flap">NOIDA → 115 STATIONS</span>
+      <span class="board-status status-deployed"><span class="dot"></span><span class="flap">DEPLOYED</span></span>
+    </div>
+    <div class="board-row">
+      <span class="flap">AM-025</span>
+      <span class="flap">AEROTWIN ITS</span>
+      <span class="flap">GSV → APRON OPS</span>
+      <span class="board-status status-boarding"><span class="dot"></span><span class="flap">BOARDING</span></span>
+    </div>
+    <div class="board-row">
+      <span class="flap">AM-072</span>
+      <span class="flap">CREDIT RISK SAAS</span>
+      <span class="flap">DATA → DECISION</span>
+      <span class="board-status status-flight"><span class="dot"></span><span class="flap">IN FLIGHT</span></span>
+    </div>
+    <div class="board-row">
+      <span class="flap">AM-021</span>
+      <span class="flap">RETAIL FORECASTING</span>
+      <span class="flap">2024 → ARCHIVE</span>
+      <span class="board-status status-landed"><span class="dot"></span><span class="flap">LANDED</span></span>
+    </div>
   </div>
 
   <div class="projects-grid">
 
     <div class="project-card" onclick="toggleExpand('p1')">
+      <div class="pc-score">92/100</div>
       <div class="pc-badge deployed">⬤ Deployed</div>
       <div class="pc-name">GCT Decision Support System</div>
-      <p class="pc-desc">AI-powered feasibility + site recommendation engine for Goods Cargo Terminals across India's Dedicated Freight Corridors. Built for DFCCIL — in production.</p>
+      <p class="pc-desc">AI-powered feasibility + site recommendation engine for Goods Cargo Terminals across India's Dedicated Freight Corridors. Built for DFCCIL — in production, evaluated 92/100.</p>
       <div class="pc-stack">
-        <span class="pc-tech">Python</span><span class="pc-tech">Streamlit</span><span class="pc-tech">Power BI</span><span class="pc-tech">Excel</span><span class="pc-tech">PDF Gen</span>
+        <span class="pc-tech">Python</span><span class="pc-tech">Streamlit</span><span class="pc-tech">Random Forest</span><span class="pc-tech">Prophet</span><span class="pc-tech">Power BI</span>
       </div>
       <div class="pc-expand" id="p1">
         <pre>Schedule-I  → Regulatory feasibility check
@@ -307,49 +486,69 @@ Schedule-II → Site recommendation + ranking
 Opportunity Index → Composite scoring (WDFC/EDFC)
 Industrial Ecosystem → 11-industry weighted score
                         30–50km catchment radius
+Forecasting → Prophet · 80.99% accuracy
 Auth        → Hybrid allowlist + domain model
 Output      → KPI dashboards · PDF reports
-              Station leaderboard
-STATUS      → ✓ Production on Streamlit Cloud</pre>
+              Station leaderboard, 115 stations
+STATUS      → ✓ Production on Streamlit Cloud · 92/100</pre>
       </div>
-      <div style="font-size:10px;color:#333;margin-top:12px;letter-spacing:1px;">▸ CLICK TO EXPAND</div>
+      <div style="font-size:10px;color:var(--dim);margin-top:12px;letter-spacing:1px;">▸ CLICK TO EXPAND</div>
     </div>
 
     <div class="project-card" onclick="toggleExpand('p2')">
-      <div class="pc-badge ml">⬤ ML</div>
-      <div class="pc-name">Airline Loyalty Analytics</div>
-      <p class="pc-desc">End-to-end customer analytics pipeline — churn prediction, segmentation, and CLV scoring for an airline loyalty program.</p>
+      <div class="pc-badge aero">⬤ Boarding</div>
+      <div class="pc-name">AeroTwin ITS</div>
+      <p class="pc-desc">AI digital twin for airport ground operations — turnaround simulation, gate and ground-crew allocation. Course deliverable worth 25% of my grade, built by reusing the GCT-DSS pipeline architecture end to end.</p>
       <div class="pc-stack">
-        <span class="pc-tech">XGBoost</span><span class="pc-tech">SMOTE</span><span class="pc-tech">K-Means</span><span class="pc-tech">Streamlit</span><span class="pc-tech">Scikit-learn</span>
+        <span class="pc-tech">Python</span><span class="pc-tech">Simulation</span><span class="pc-tech">Pipeline Reuse</span><span class="pc-tech">Ground Ops</span>
       </div>
       <div class="pc-expand" id="p2">
-        <pre>Churn Model → XGBoost + SMOTE oversampling
-             Tuned on AUC-ROC
-Segments    → K-Means clustering
-             RFM + CLV scoring
-Output      → Streamlit prototype dashboard
-             + Full technical report</pre>
+        <pre>Digital Twin → Airport ground-ops simulation
+Reused        → GCT-DSS pipeline architecture
+Scope         → Gate allocation, turnaround time,
+                ground crew scheduling
+Weight        → 25% of course grade
+STATUS        → ✈ In progress — course deliverable</pre>
       </div>
-      <div style="font-size:10px;color:#333;margin-top:12px;letter-spacing:1px;">▸ CLICK TO EXPAND</div>
+      <div style="font-size:10px;color:var(--dim);margin-top:12px;letter-spacing:1px;">▸ CLICK TO EXPAND</div>
+    </div>
+
+    <div class="project-card" onclick="toggleExpand('p3')">
+      <div class="pc-badge ml">⬤ In Flight</div>
+      <div class="pc-name">Credit Risk SaaS</div>
+      <p class="pc-desc">Credit risk decisioning platform for NBFCs and lending platforms — an XGBoost scoring engine, SHAP-based explainability, and a rule-based advisory layer that turns a score into a REJECT-to-APPROVE recommendation.</p>
+      <div class="pc-stack">
+        <span class="pc-tech">XGBoost</span><span class="pc-tech">SHAP</span><span class="pc-tech">FastAPI</span><span class="pc-tech">Rule Engine</span>
+      </div>
+      <div class="pc-expand" id="p3">
+        <pre>Model      → XGBoost · AUC 0.7215 · Recall 71.26%
+Explain    → SHAP-based feature attribution
+Advisory   → Rule-based REJECT → APPROVE engine
+Backend    → FastAPI
+Pending    → Next.js frontend, Claude advisory layer
+STATUS     → In progress</pre>
+      </div>
+      <div style="font-size:10px;color:var(--dim);margin-top:12px;letter-spacing:1px;">▸ CLICK TO EXPAND</div>
     </div>
 
     <div class="project-card" onclick="window.open('https://github.com/abhinavmishragsv-analytics/Retail-Sales-Forecasting-Project','_blank')">
-      <div class="pc-badge ts">⬤ Time-Series</div>
+      <div class="pc-badge ts">⬤ Landed</div>
       <div class="pc-name">Retail Sales Forecasting</div>
       <p class="pc-desc">Time-series forecasting on real retail data. Demand prediction pipeline with trend decomposition and seasonal analysis.</p>
       <div class="pc-stack">
         <span class="pc-tech">Python</span><span class="pc-tech">Pandas</span><span class="pc-tech">Matplotlib</span><span class="pc-tech">Jupyter</span>
       </div>
-      <div style="font-size:10px;color:#88aaff;margin-top:16px;letter-spacing:1px;">↗ OPEN ON GITHUB</div>
+      <div style="font-size:10px;color:var(--blue);margin-top:16px;letter-spacing:1px;">↗ OPEN ON GITHUB</div>
     </div>
 
   </div>
 </section>
 
-<!-- STACK -->
-<section id="stack" style="max-width:1100px;margin:0 auto;padding:80px 60px;">
+<!-- STACK / AVIONICS -->
+<section id="stack">
   <div class="section-label">// 04</div>
-  <div class="section-title">$ cat <span>./stack.json</span></div>
+  <div class="section-title">$ cat <span>avionics.json</span></div>
+  <div class="section-subtitle">// instrument panel — tools &amp; concepts</div>
   <div class="stack-grid">
     <div class="stack-group">
       <div class="sg-label">Languages</div>
@@ -362,8 +561,8 @@ Output      → Streamlit prototype dashboard
     <div class="stack-group">
       <div class="sg-label">ML / Data</div>
       <div class="sg-items">
-        <div class="sg-item">Scikit-Learn</div>
-        <div class="sg-item">XGBoost</div>
+        <div class="sg-item">Scikit-Learn · XGBoost</div>
+        <div class="sg-item">Prophet · SHAP</div>
         <div class="sg-item">Pandas · NumPy</div>
         <div class="sg-item">Matplotlib · Seaborn</div>
       </div>
@@ -372,6 +571,7 @@ Output      → Streamlit prototype dashboard
       <div class="sg-label">Deploy / Viz</div>
       <div class="sg-items">
         <div class="sg-item">Streamlit</div>
+        <div class="sg-item">FastAPI</div>
         <div class="sg-item">Power BI</div>
         <div class="sg-item">Git / GitHub</div>
       </div>
@@ -379,21 +579,22 @@ Output      → Streamlit prototype dashboard
     <div class="stack-group">
       <div class="sg-label">Concepts</div>
       <div class="sg-items">
-        <div class="sg-item">EDA & Feature Eng.</div>
+        <div class="sg-item">EDA &amp; Feature Eng.</div>
         <div class="sg-item">Classification / Clustering</div>
-        <div class="sg-item">System Design</div>
-        <div class="sg-item">Analytics Pipelines</div>
+        <div class="sg-item">System &amp; Pipeline Design</div>
+        <div class="sg-item">Digital Twins &amp; Simulation</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- CONTACT -->
-<section id="contact" style="max-width:1100px;margin:0 auto;padding:80px 60px;">
+<!-- CONTACT / TOWER -->
+<section id="contact">
   <div class="section-label">// 05</div>
-  <div class="section-title">$ ping <span>./connect</span></div>
+  <div class="section-title">$ ping <span>tower.connect</span></div>
+  <div class="section-subtitle">// contact</div>
   <div class="contact-box">
-    <p style="font-size:13px;color:#666;line-height:1.9;">I'm actively looking for internships and collaborations in <span style="color:#39FF14">data science, analytics, and AI systems</span>. If you're building something interesting — let's talk.</p>
+    <p style="font-size:13px;color:var(--muted2);line-height:1.9;">Currently cleared for internships and collaborations in <span style="color:var(--green)">AI systems, infrastructure analytics, and applied ML</span> — freight, aviation, fintech, wherever the data leads. If you're building something real, let's talk on the frequency below.</p>
     <div class="contact-links">
       <a class="contact-link" href="https://www.linkedin.com/in/abhinavamishra/" target="_blank">
         <span>LinkedIn</span>in/abhinavamishra
@@ -409,22 +610,27 @@ Output      → Streamlit prototype dashboard
 </section>
 
 <footer>
-  <div>Built with <span>data > assumptions</span></div>
-  <div>Abhinav Mishra © 2026</div>
+  <div>Built with <span>data &gt; assumptions</span></div>
+  <div class="footer-status"><span class="dot"></span>STATUS: AIRBORNE · Abhinav Mishra © 2026</div>
 </footer>
+<div style="text-align:center;padding:0 24px 24px;" class="footer-hint">// try typing "takeoff" anywhere on this page</div>
 
 <script>
+const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- BOOT SEQUENCE ---------- */
 const bootLines = [
-  {text: 'BIOS v2.0.28 · Gati Shakti University', cls: 'dim'},
-  {text: 'Initializing kernel . . . OK', cls: ''},
-  {text: 'Loading modules: [python] [ml] [analytics] [streamlit]', cls: ''},
-  {text: 'Mounting internship.log . . . OK', cls: ''},
-  {text: '  [DFCCIL]          → AI Decision Support System   DEPLOYED ✓', cls: 'yellow'},
-  {text: '  [Indian Railways] → DRM Office Delhi             DONE ✓', cls: ''},
+  {text: 'AVIONICS SYSTEM v2.8 · GSV FLIGHT COMPUTER', cls: 'dim'},
+  {text: 'Requesting clearance from ATC . . . GRANTED', cls: ''},
+  {text: 'IDENT: ABHINAV MISHRA · CALLSIGN AM-28', cls: ''},
+  {text: 'Loading flight manifest . . .', cls: ''},
+  {text: '  [DFCCIL]           GCT-DSS DEPLOYED — 92/100 ✓', cls: 'yellow'},
+  {text: '  [INDIAN RAILWAYS]  S&T DEPT, DRM DELHI — COMPLETE ✓', cls: ''},
   {text: 'Loading achievement: IIT Guwahati Bootcamp — TOP 10% ✓', cls: 'yellow'},
+  {text: 'Cross-checking instruments: ML ✓  Analytics ✓  Systems ✓', cls: ''},
   {text: 'Connecting to github.com/abhinavmishragsv-analytics . . . OK', cls: ''},
   {text: '', cls: ''},
-  {text: 'SYSTEM READY. LAUNCHING PORTFOLIO . . .', cls: 'yellow'},
+  {text: 'RUNWAY CLEAR. CLEARED FOR TAKEOFF . . .', cls: 'yellow'},
 ];
 
 const container = document.getElementById('boot-lines');
@@ -439,29 +645,133 @@ function nextLine() {
     container.appendChild(div);
     container.appendChild(cursor);
     i++;
-    setTimeout(nextLine, i === bootLines.length ? 600 : 180);
+    setTimeout(nextLine, prefersReduced ? 0 : (i === bootLines.length ? 500 : 150));
   } else {
     setTimeout(() => {
       const boot = document.getElementById('boot');
       boot.style.transition = 'opacity 0.6s';
       boot.style.opacity = '0';
-      setTimeout(() => { boot.style.display = 'none'; }, 600);
-    }, 500);
+      setTimeout(() => { boot.style.display = 'none'; }, prefersReduced ? 0 : 600);
+    }, prefersReduced ? 0 : 400);
   }
 }
+setTimeout(nextLine, prefersReduced ? 0 : 350);
 
-setTimeout(nextLine, 400);
-
+/* ---------- PROJECT EXPAND ---------- */
 function toggleExpand(id) {
   const el = document.getElementById(id);
   el.classList.toggle('open');
 }
 
+/* ---------- TIMELINE REVEAL ---------- */
 const items = document.querySelectorAll('.tl-item');
 const obs = new IntersectionObserver(entries => {
   entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
 }, {threshold: 0.2});
 items.forEach(el => obs.observe(el));
+
+/* ---------- FLIGHT PLANE ALONG TIMELINE ---------- */
+const timelineEl = document.getElementById('timelineEl');
+const plane = document.getElementById('flightPlane');
+function updatePlane(){
+  const rect = timelineEl.getBoundingClientRect();
+  const vh = window.innerHeight;
+  let progress = (vh/2 - rect.top) / rect.height;
+  progress = Math.max(0, Math.min(1, progress));
+  plane.style.top = (progress * rect.height) + 'px';
+  plane.style.opacity = (rect.bottom < 0 || rect.top > vh) ? '0' : '1';
+}
+window.addEventListener('scroll', updatePlane, {passive:true});
+window.addEventListener('resize', updatePlane);
+updatePlane();
+
+/* ---------- ALTITUDE TAPE (scroll progress) ---------- */
+const tapeFill = document.getElementById('alt-tape-fill');
+const scrollPct = document.getElementById('scrollPct');
+function updateTape(){
+  const doc = document.documentElement;
+  const max = doc.scrollHeight - doc.clientHeight;
+  const pct = max > 0 ? Math.round((doc.scrollTop / max) * 100) : 0;
+  tapeFill.style.height = pct + '%';
+  scrollPct.textContent = pct;
+}
+window.addEventListener('scroll', updateTape, {passive:true});
+updateTape();
+
+/* ---------- HUD TELEMETRY TICKER ---------- */
+if(!prefersReduced){
+  const altEl = document.getElementById('altVal');
+  const spdEl = document.getElementById('spdVal');
+  let alt = 12400;
+  setInterval(() => {
+    alt += 10 + Math.floor(Math.random()*30);
+    altEl.textContent = alt.toLocaleString();
+    spdEl.textContent = (0.78 + Math.random()*0.08).toFixed(2);
+  }, 1400);
+}
+
+/* ---------- DEPARTURES BOARD SPLIT-FLAP ---------- */
+const flapChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789→';
+function animateChar(span, finalChar, delay){
+  if(prefersReduced){ span.textContent = finalChar; return; }
+  setTimeout(() => {
+    let count = 0;
+    const maxFlips = 6 + Math.floor(Math.random()*6);
+    const iv = setInterval(() => {
+      span.textContent = finalChar === ' ' ? '\u00a0' : flapChars[Math.floor(Math.random()*flapChars.length)];
+      count++;
+      if(count > maxFlips){
+        clearInterval(iv);
+        span.textContent = finalChar === ' ' ? '\u00a0' : finalChar;
+      }
+    }, 55);
+  }, delay);
+}
+function flapify(el){
+  const final = el.textContent;
+  el.textContent = '';
+  [...final].forEach((ch, idx) => {
+    const span = document.createElement('span');
+    span.className = 'flap-char';
+    span.textContent = ch === ' ' ? '\u00a0' : ch;
+    el.appendChild(span);
+    animateChar(span, ch, idx * 45);
+  });
+}
+const boardEl = document.getElementById('board');
+let boardFlipped = false;
+const boardObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(e.isIntersecting && !boardFlipped){
+      boardFlipped = true;
+      document.querySelectorAll('#board .flap').forEach(flapify);
+    }
+  });
+}, {threshold:0.3});
+boardObs.observe(boardEl);
+
+/* ---------- EASTER EGG: type "takeoff" ---------- */
+let keyBuffer = '';
+window.addEventListener('keydown', e => {
+  if(e.key.length === 1){
+    keyBuffer = (keyBuffer + e.key).slice(-7).toUpperCase();
+    if(keyBuffer === 'TAKEOFF'){
+      triggerTakeoff();
+      keyBuffer = '';
+    }
+  }
+});
+function triggerTakeoff(){
+  const jet = document.createElement('div');
+  jet.className = 'easter-jet';
+  jet.textContent = '✈';
+  document.body.appendChild(jet);
+  const msg = document.createElement('div');
+  msg.className = 'easter-msg';
+  msg.textContent = 'AFTERBURNER ENGAGED — CLEARED FOR TAKEOFF';
+  document.body.appendChild(msg);
+  setTimeout(() => { jet.remove(); msg.remove(); }, prefersReduced ? 100 : 2600);
+}
 </script>
 </body>
 </html>
