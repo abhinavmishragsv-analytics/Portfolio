@@ -258,8 +258,7 @@ section{padding-top:84px}
     <div class="photo-col">
       <div class="frame-wrap">
         <div class="frame">
-          <img src="assets/abhinav-photo.jpg" alt="Portrait of Abhinav Mishra" width="720" height="900" fetchpriority="high" decoding="async"
-               onerror="if(!this.dataset.retry){this.dataset.retry=1;this.src='abhinav-photo.jpg';}else{this.style.display='none';this.nextElementSibling.style.display='flex';}"/>
+          <img id="heroPhoto" src="abhinav-photo.jpg" alt="Portrait of Abhinav Mishra" width="720" height="900" fetchpriority="high" decoding="async"/>
           <div class="fallback" aria-hidden="true">AM</div>
         </div>
       </div>
@@ -462,6 +461,28 @@ Status   → In progress</pre></span>
 (function(){
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const $ = id => document.getElementById(id);
+
+/* Hero photo: try likely locations / names, then fall back to the AM monogram */
+(function(){
+  const img = $('heroPhoto'), fb = img.nextElementSibling;
+  const names = ['abhinav-photo','Abhinav-photo','abhinav_photo','abhinav','profile','photo'];
+  const exts = ['jpg','jpeg','png','webp','JPG','JPEG','PNG'];
+  const tries = [];
+  ['abhinav-photo.jpg','/abhinav-photo.jpg','assets/abhinav-photo.jpg','/assets/abhinav-photo.jpg'].forEach(p => tries.push(p));
+  ['','/','assets/','/assets/'].forEach(dir => names.forEach(n => exts.forEach(e => tries.push(dir + n + '.' + e))));
+  let i = 0;
+  function next(){
+    if(i >= tries.length){
+      img.style.display = 'none'; fb.style.display = 'flex';
+      console.warn('Hero photo not found. Tried ' + tries.length + ' paths, e.g. ' + tries.slice(0,3).join(', '));
+      return;
+    }
+    img.src = tries[i++];
+  }
+  img.addEventListener('error', next);
+  img.addEventListener('load', () => { img.style.display = 'block'; fb.style.display = 'none'; });
+  if(img.complete && img.naturalWidth === 0) next();
+})();
 
 /* Typed prompt (once on load) */
 const typed = $('typed');
